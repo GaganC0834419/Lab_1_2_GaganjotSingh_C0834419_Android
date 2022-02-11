@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="radius_button_corner">30dp</dimen>
+    <dimen name="button_text_size">14sp</dimen>
+    <dimen name="dialogpadding">13dp</dimen>
+    <dimen name="dialogtextsiz">17sp</dimen>
+    <dimen name="fragmentbuttonheight">46dp</dimen>
+    <dimen name="fragmentbuttonpadding">50dp</dimen>
+    <dimen name="dialogbtnpaddimgtop">5dp</dimen>
+    <dimen name="dialogbtnsiz">17sp</dimen>
+    <dimen name="field_margin_top">15dp</dimen>
+    <dimen name="label_margin_top">5dp</dimen>
+    <dimen name="margin_top_submit_btn">25dp</dimen>
+    <dimen name="loginButton_textsize">16sp</dimen>
+    <dimen name="dialogHeadingSize">16sp</dimen>
+    <dimen name="homeZpslayArrow">25dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+</resources>
