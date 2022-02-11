@@ -28,4 +28,5 @@ public interface AddExpenseDao {
 
     @Update
     void update(AddExpense addExpense);
+
 }

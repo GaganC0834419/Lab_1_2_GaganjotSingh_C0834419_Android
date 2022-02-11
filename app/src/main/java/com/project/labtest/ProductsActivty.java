@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -22,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.ivbaranov.mli.MaterialLetterIcon;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.project.labtest.db.AppDatabase;
 import com.project.labtest.db.DatabaseClient;
@@ -44,6 +46,8 @@ public class ProductsActivty extends BaseActivity {
     RecyclerView mRecyclerView;
     @BindView(R.id.mAddProductBtn)
     FloatingActionButton mAddProductBtn;
+    @BindView(R.id.mTotalTv)
+    TextView mTotalTv;
 
     private int[] mMaterialColors;
 
@@ -52,6 +56,7 @@ public class ProductsActivty extends BaseActivity {
     LedgerAdapter ledgerAdapter;
 
     private static final Random RANDOM = new Random();
+    BottomSheetDialog dialog1;
 
 
     @Override
@@ -88,7 +93,7 @@ public class ProductsActivty extends BaseActivity {
                         if (s.length() == 0) {
                             ledgerAdapter.filterList(ledgers);
                         } else {
-                            ((LedgerAdapter)mRecyclerView.getAdapter()).filter(s.toString());
+                            ((LedgerAdapter) mRecyclerView.getAdapter()).filter(s.toString());
 
                         }
 
@@ -100,7 +105,7 @@ public class ProductsActivty extends BaseActivity {
         mAddProductBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(ProductsActivty.this,AddProductActivity.class));
+                startActivity(new Intent(ProductsActivty.this, AddProductActivity.class));
 
             }
         });
@@ -123,6 +128,8 @@ public class ProductsActivty extends BaseActivity {
             @Override
             protected void onPostExecute(List<AddExpense> ledgers) {
                 super.onPostExecute(ledgers);
+
+                mTotalTv.setText("Total Products "+ledgers.size()+"");
 
                 newList = new ArrayList<>(ledgers.size());
 
@@ -187,15 +194,14 @@ public class ProductsActivty extends BaseActivity {
 
                     deleteSelectedRow(ledger);
 
-
-                    //Toast.makeText(getActivity(), "Delete Clicked", Toast.LENGTH_SHORT).show();
                 }
             });
 
             holder.mEditTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(ProductsActivty.this, "Edit Clicked", Toast.LENGTH_SHORT).show();
+                    setEditDialog(ledger);
+
                 }
             });
 
@@ -203,10 +209,80 @@ public class ProductsActivty extends BaseActivity {
                 @Override
                 public void onClick(View v) {
 
-
                 }
             });
 
+        }
+
+        private void setEditDialog(AddExpense ledger) {
+            View view = getLayoutInflater().inflate(R.layout.demo2_layout, null);
+
+            TextView mNameEt = view.findViewById(R.id.mNameEt);
+            TextView descriptionEt = view.findViewById(R.id.description_et);
+            TextView mPriceEt = view.findViewById(R.id.mPriceEt);
+            TextView mLatEt = view.findViewById(R.id.mLatEt);
+            TextView mLngEt = view.findViewById(R.id.mLngEt);
+            Button saveBtn = view.findViewById(R.id.saveBtn);
+
+            mNameEt.setText(ledger.getName());
+            descriptionEt.setText(ledger.getDescription());
+            mPriceEt.setText(ledger.getPrice());
+            mLatEt.setText(ledger.getLat());
+            mLngEt.setText(ledger.getLng());
+
+            saveBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mNameEt.getText().toString().trim().isEmpty()
+                            || descriptionEt.getText().toString().trim().isEmpty()
+                            || mPriceEt.getText().toString().trim().isEmpty()
+                            || mLatEt.getText().toString().trim().isEmpty()
+                            || mLngEt.getText().toString().trim().isEmpty()) {
+                        Toast.makeText(ProductsActivty.this, "Please enter all teh details", Toast.LENGTH_SHORT).show();
+                    } else {
+                        dialog1.dismiss();
+                        updateProduct(ledger, mNameEt.getText().toString().trim(), descriptionEt.getText().toString().trim(),
+                                mPriceEt.getText().toString().trim(), mLatEt.getText().toString().trim(), mLngEt.getText().toString().trim());
+                    }
+                }
+            });
+
+
+            dialog1 = new BottomSheetDialog(ProductsActivty.this);
+            dialog1.setContentView(view);
+            dialog1.show();
+        }
+
+        private void updateProduct(AddExpense ledger, String name, String des, String price, String lat, String lng) {
+            class SaveExpense extends AsyncTask<Void, Void, Void> {
+
+                @Override
+                protected Void doInBackground(Void... voids) {
+
+                    ledger.setName(name);
+                    ledger.setDescription(des);
+                    ledger.setPrice(price);
+                    ledger.setLat(lat);
+                    ledger.setLng(lng);
+
+                    //adding to database
+                    DatabaseClient.getInstance(ProductsActivty.this).getAppDatabase()
+                            .addExpenseDao()
+                            .update(ledger);
+                    return null;
+
+                }
+
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    super.onPostExecute(aVoid);
+                    Toast.makeText(ProductsActivty.this, "Your data has been updated successfully", Toast.LENGTH_LONG).show();
+                    getProducts();
+                }
+            }
+
+            SaveExpense saveExpense = new SaveExpense();
+            saveExpense.execute();
         }
 
 
@@ -284,8 +360,7 @@ public class ProductsActivty extends BaseActivity {
             @Override
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
-                startActivity(new Intent(ProductsActivty.this,HomeActivity.class));
-                finish();
+               getProducts();
             }
         }
 
