@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,6 +67,35 @@ public class ProductsActivty extends BaseActivity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(ProductsActivty.this));
 
         getProducts();
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mSearchEt.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        if (s.length() == 0) {
+                            ledgerAdapter.filterList(ledgers);
+                        } else {
+                            ((LedgerAdapter)mRecyclerView.getAdapter()).filter(s.toString());
+
+                        }
+
+                    }
+                });
+            }
+        }, 100);
 
         mAddProductBtn.setOnClickListener(new View.OnClickListener() {
             @Override
